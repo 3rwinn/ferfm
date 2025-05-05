@@ -1,0 +1,78 @@
+version: '3.9'
+
+services:
+  db:
+    image: pgvector/pgvector:pg16 # Use pgvector image
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-kaydangpt_db}
+      - POSTGRES_USER=${POSTGRES_USER:-kaydangpt_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-kaydangpt_password}
+    ports:
+      - "5433:5432" # Expose PostgreSQL on host port 5433 to avoid conflicts
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-kaydangpt_user} -d $${POSTGRES_DB:-kaydangpt_db}"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+  web:
+    build:
+      context: . # Adjusted path
+      dockerfile: Dockerfile
+    container_name: django_web
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app # Adjusted path
+      - static_volume:/app/staticfiles
+      - media_volume:/app/core/media
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-your_development_secret_key}
+      - DEBUG=True
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - POSTGRES_DB=${POSTGRES_DB:-kaydangpt_db}
+      - POSTGRES_USER=${POSTGRES_USER:-kaydangpt_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-kaydangpt_password}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+
+  qcluster:
+    build:
+      context: . # Adjusted path
+      dockerfile: Dockerfile
+    container_name: django_qcluster
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py qcluster"
+    volumes:
+      - .:/app # Adjusted path
+      - media_volume:/app/core/media
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-your_development_secret_key}
+      - DEBUG=True
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - POSTGRES_DB=${POSTGRES_DB:-kaydangpt_db}
+      - POSTGRES_USER=${POSTGRES_USER:-kaydangpt_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-kaydangpt_password}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      db:
+        condition: service_healthy
+      web:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume: 
