@@ -32,6 +32,6 @@ EXPOSE 8000
 
 # Command to run the application using gunicorn (or use manage.py runserver for development)
 # For development, we often run this command via docker-compose instead.
-# CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "core.wsgi:application", "--bind", "0.0.0.0:8000"]
 # For simple development testing:
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] 
+# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] 
