@@ -17,6 +17,8 @@ services:
         interval: 10s
         timeout: 5s
         retries: 5
+    networks:
+      - dokploy-network
 
   web:
     build:
@@ -45,6 +47,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend-app.rule=Host(`backend.dokploy.com`)
+      - traefik.http.routers.backend-app.entrypoints=web
+      - traefik.http.services.backend-app.loadbalancer.server.port=8000
 
   qcluster:
     build:
@@ -71,8 +80,15 @@ services:
         condition: service_healthy
       web:
         condition: service_started
+    networks:
+      - dokploy-network
 
 volumes:
   postgres_data:
   static_volume:
   media_volume: 
+
+networks:
+  dokploy-network:
+    external: true
+
