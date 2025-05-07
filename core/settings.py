@@ -167,8 +167,8 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "KAYDANGPT API",
-    "DESCRIPTION": "Api pour l'application KAYDANGPT",
+    "TITLE": "FER FM API",
+    "DESCRIPTION": "Api pour l'application FER FM",
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
 }
