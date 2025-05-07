@@ -42,6 +42,10 @@ urlpatterns = [
     ),
     # Our new knowledge base API endpoint
     path("api/knowledge/", include("knowledge_base.urls", namespace="knowledge_base")),
+    # Our new actu API endpoint
+    path("api/actus/", include("actus.urls", namespace="actu")),
+    # Push Notifications API endpoints
+    path("api/push_notifications/", include("push_notifications.urls", namespace="push_notifications")),
 ]
 
 if settings.DEBUG:

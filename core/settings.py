@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     "drf_spectacular",  # NEW
     'knowledge_base', # Added for RAG
     'django_q',
+    'actus', # Added for actu app
+    'push_notifications', # Added for the new push notification system
 ]
 
 MIDDLEWARE = [
