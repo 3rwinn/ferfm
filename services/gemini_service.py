@@ -20,8 +20,9 @@ def generate_answer(user_question, knowledge_snippets):
     - "selon le document"
 
     RULES:
-    - If you don't have information about the question, just say "I don't know" and don't make up an answer.
+    - If you don't have information about the question, just say "Je ne peux pas vous aider pour cette requête" and don't make up an answer.
     - If you have the answer just say it directly.
+    - Always answer in FRENCH.
 
     KNOWLEDGE BASE:
     {' '.join(knowledge_snippets)}
