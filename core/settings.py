@@ -15,7 +15,6 @@ from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,7 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'core', # Add core app itself to find management commands
+    'core',  # Add core app itself to find management commands
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,12 +45,13 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_spectacular",  # NEW
-    'knowledge_base', # Added for RAG
+    'knowledge_base',  # Added for RAG
     'django_q',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -89,7 +89,8 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB', 'kaydangpt_db'),
         'USER': os.environ.get('POSTGRES_USER', 'kaydangpt_user'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'kaydangpt_password'),
-        'HOST': os.environ.get('POSTGRES_HOST', 'db'),  # Service name in docker-compose
+        # Service name in docker-compose
+        'HOST': os.environ.get('POSTGRES_HOST', 'db'),
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
@@ -136,7 +137,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'core/media'
 
-CORS_ORIGIN_ALLOW_ALL = bool(DEBUG)
+CORS_ORIGIN_ALLOW_ALL = True
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
