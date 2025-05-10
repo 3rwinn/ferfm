@@ -20,7 +20,7 @@ def generate_answer(user_question, knowledge_snippets):
     - "selon le document"
 
     RULES:
-    - If you don't have information about the question, just say "Je ne peux pas vous aider pour cette requête" and don't make up an answer.
+    - If you don't have information about the question, just say "Je ne peux pas vous aider pour cette requête. Avez-vous une autre question sur les sujets suivants: FER FM, #FERMAN, Fonds d'entretient routier ?" and don't make up an answer and also.
     - If you have the answer just say it directly.
     - Always answer in FRENCH.
 
