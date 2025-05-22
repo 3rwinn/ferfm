@@ -1,5 +1,12 @@
 from django.shortcuts import render
 import logging
+import requests
+import os
+from datetime import datetime
+from rest_framework.decorators import api_view, permission_classes
+from django.http import HttpResponse, FileResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,6 +29,10 @@ logger = logging.getLogger(__name__)
 # --- Constants ---
 # Number of relevant chunks to retrieve for context
 TOP_K = 5
+
+# Create media directory if it doesn't exist
+MEDIA_ROOT = os.path.join(settings.BASE_DIR, 'media', 'tts')
+os.makedirs(MEDIA_ROOT, exist_ok=True)
 
 # --- Load Model Globally (for efficiency within the API worker process) ---
 # Ensure this matches the model used in tasks.py
@@ -49,7 +60,7 @@ class QueryKnowledgeView(APIView):
     def post(self, request, *args, **kwargs):
         if not embedding_model:
             return Response(
-                {"error": "Embedding model is not available. Cannot process query."},
+                {"error": "Embedding model is not availableee. Cannot process query."},
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
@@ -110,3 +121,42 @@ class QueryKnowledgeView(APIView):
                     "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def tts_proxy(request):
+    try:
+        # Generate a unique filename based on timestamp and text hash
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        text_hash = hash(request.data.get('input', '')) % 10000
+        filename = f"tts_{timestamp}_{text_hash}.mp3"
+        filepath = os.path.join(MEDIA_ROOT, filename)
+
+        # Check if file already exists
+        if os.path.exists(filepath):
+            logger.info(f"Using cached audio file: {filename}")
+            return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
+
+        # Forward the request to the TTS service
+        response = requests.post(
+            "http://10.20.1.123:8880/v1/audio/speech",
+            json=request.data,
+            stream=True
+        )
+        
+        if not response.ok:
+            return Response({"error": "TTS service error"}, status=response.status_code)
+
+        # Save the audio file
+        with open(filepath, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+
+        # Return the saved file
+        return FileResponse(open(filepath, 'rb'), content_type='audio/mpeg')
+
+    except Exception as e:
+        logger.error(f"Error in TTS proxy: {str(e)}", exc_info=True)
+        return Response({"error": str(e)}, status=500)
